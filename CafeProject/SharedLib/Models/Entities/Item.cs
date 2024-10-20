@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,5 +13,7 @@ namespace SharedLib.Models.Entities
         public string Name { get; set;}
 
         public decimal Price { get; set;}
+
+        public Collection<CartItemGroup> CartItemGroups { get;}
     }
 }
