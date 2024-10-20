@@ -14,6 +14,6 @@ namespace SharedLib.Models.Entities
 
         public decimal Price { get; set;}
 
-        public Collection<CartItemGroup> CartItemGroups { get;}
+        public ICollection<CartItemGroup> Carts { get;}
     }
 }

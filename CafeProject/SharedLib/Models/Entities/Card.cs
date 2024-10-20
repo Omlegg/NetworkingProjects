@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace SharedLib.Models.Entities
 {
-    public class Check
+    public class Card
     {
         public int Id { get; set; }
 
-        public decimal Price {get;set;}
+        public int AmountOfCoffee {get;set;}
 
         public User User {get;set;}
     }

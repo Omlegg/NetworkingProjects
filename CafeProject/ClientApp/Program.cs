@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using SharedLib.Models.Entities;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 HttpClient httpClient = new HttpClient();
 bool exit = false;
@@ -52,17 +54,16 @@ while (!exit)
 async Task Login()
 {
     Console.Write("Enter username: ");
-    var username = Console.ReadLine();
+    var username = Console.ReadLine() ?? "UNKNOWN";
 
     Console.Write("Enter password: ");
-    var password = Console.ReadLine();
+    var password = Console.ReadLine() ?? "_";
 
-    var loginData = new
+    var loginData = new User
     {
-        username = username,
-        password = password
+        UserName = username,
+        Password = password
     };
-
     var response = await httpClient.PostAsJsonAsync("http://localhost:7373/account/login", loginData);
 
     if (response.IsSuccessStatusCode)

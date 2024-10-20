@@ -12,10 +12,14 @@ namespace ServerApp.Context
     public class CafeDbContext : DbContext
     {
         
-        private const string connectionString = "Server=localhost;Database=CafeDb;Intefrated Security = True;TrustServerCertificate=True;";
+        private const string connectionString = "Server=localhost;Database=CafeDb;Integrated Security = True;TrustServerCertificate=True;";
         public DbSet<User> Users{get;set;}
+        public DbSet<Log> Logs{get;set;}
         public DbSet<Item> Items { get; set; }
         public DbSet<Cart> Carts { get; set; }
+
+        public DbSet<Card> Cards { get; set; }
+
         public DbSet<CartItemGroup> CartItemGroup { get; set; }
 
         public DbSet<Check> Checks {get;set;}
@@ -33,6 +37,26 @@ namespace ServerApp.Context
                 .HasKey(user => user.Id);
 
             modelBuilder
+                .Entity<Cart>()
+                .HasKey(user => user.Id);
+            
+            modelBuilder
+                .Entity<Item>()
+                .HasKey(user => user.Id);
+            
+            modelBuilder
+                .Entity<Cart>()
+                .HasKey(user => user.Id);
+
+            modelBuilder
+                .Entity<CartItemGroup>()
+                .HasKey(user => user.Id);
+            
+            modelBuilder
+                .Entity<Log>()
+                .HasKey(user => user.Id);
+
+            modelBuilder
                 .Entity<User>()
                 .Property(user => user.UserName).IsRequired(true);
 
@@ -40,9 +64,12 @@ namespace ServerApp.Context
                 .Entity<User>()
                 .Property(user => user.Password).IsRequired(true);
 
-            //modelBuilder
-            //    .Entity<User>()
-            //    .ToTable(tb => tb.HasCheckConstraint("MY_CHECK_CONSTRAINT", "len([Firstname]) > 5"));
+            modelBuilder
+                .Entity<Check>()
+                .HasKey(user => user.Id);
+            modelBuilder
+                .Entity<Card>()
+                .ToTable(tb => tb.HasCheckConstraint("CHECK_CONSTRAINT", "[AmountOfCoffee] <= 12"));
 
             base.OnModelCreating(modelBuilder);
         }

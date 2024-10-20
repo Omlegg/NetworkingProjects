@@ -14,6 +14,6 @@ namespace SharedLib.Models.Entities
 
         public User User {get; set;}
 
-        public Collection<CartItemGroup> CartItemGroups { get;}
+        public ICollection<CartItemGroup> Items { get;}
     }
 }

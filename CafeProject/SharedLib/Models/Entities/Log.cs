@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace SharedLib.Models.Entities
 {
-    public class Check
+    public class Log
     {
-        public int Id { get; set; }
+        public int Id{get;set;}
 
-        public decimal Price {get;set;}
+        public DateTime dateTime{get;set;}
 
-        public User User {get;set;}
+        public string LogText{get;set;}
     }
 }
