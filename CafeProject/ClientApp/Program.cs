@@ -3,55 +3,113 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using SharedLib.Models.Entities;
 using System.Threading.Tasks;
-using System.Text.Json;
 
 HttpClient httpClient = new HttpClient();
 bool exit = false;
+bool isLoggedIn = false;
+
+if (!await CheckServerConnection())
+{
+    Console.WriteLine("Unable to connect to the server. Program will now exit.");
+    return;
+}
 
 while (!exit)
 {
-    // MENU
-    
-    Console.WriteLine("1. Login");
-    Console.WriteLine("2. Show Menu");
-    Console.WriteLine("3. Show Your Cart");
-    Console.WriteLine("4. Show Your Cards");
-    Console.WriteLine("5. Buy Item");
-    Console.WriteLine("6. Show Your Check History");
-    Console.WriteLine("7. Exit");
-    Console.Write("Choose an option: ");
-
-    var choice = Console.ReadLine();
-    switch (choice)
+    if (!isLoggedIn)
     {
-        case "1":
-            await Login();
-            break;
-        case "2":
-            await ShowMenu();
-            break;
-        case "3":
-            await ShowYourCart();
-            break;
-        case "4":
-            await ShowYourCards();
-            break;
-        case "5":
-            await BuyItem();
-            break;
-        case "6":
-            await ShowYourCheckHistory();
-            break;
-        case "7":
-            exit = true;
-            break;
-        default:
-            Console.WriteLine("Invalid option, try again.");
-            break;
+        Console.WriteLine("1. Login");
+        Console.WriteLine("2. Exit");
+        Console.Write("Choose an option: ");
+
+        var choice = Console.ReadLine();
+        switch (choice)
+        {
+            case "1":
+                isLoggedIn = await Login();
+                if (!isLoggedIn)
+                {
+                    Console.WriteLine("Login failed. Try again.");
+                }
+                break;
+            case "2":
+                exit = true;
+                break;
+            default:
+                Console.WriteLine("Invalid option, try again.");
+                break;
+        }
+    }
+    else
+    {
+        Console.WriteLine("1. Show Menu");
+        Console.WriteLine("2. Show Your Cart");
+        Console.WriteLine("3. Show Your Cards");
+        Console.WriteLine("4. Add to Cart");
+        Console.WriteLine("5. Purchase all");
+        Console.WriteLine("6. Show Your Check History");
+        Console.WriteLine("7. Logout");
+        Console.WriteLine("8. Exit");
+        Console.Write("Choose an option: ");
+
+        var choice = Console.ReadLine();
+        switch (choice)
+        {
+            case "1":
+                await ShowMenu();
+                break;
+            case "2":
+                await ShowYourCart();
+                break;
+            case "3":
+                await ShowYourCards();
+                break;
+            case "4":
+                await AddToCart();
+                break;
+            case "5":
+                await Purchase();
+                break;
+            case "6":
+                await ShowYourCheckHistory();
+                break;
+            case "7":
+                isLoggedIn = false; // Added Logout
+                break;
+            case "8":
+                exit = true;
+                break;
+            default:
+                Console.WriteLine("Invalid option, try again.");
+                break;
+        }
     }
 }
 
-async Task Login()
+async Task<bool> CheckServerConnection()
+{
+    try
+    {
+        var response = await httpClient.GetAsync("http://localhost:7373");
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Connected to the server.");
+            return true;
+        }
+        else
+        {
+            Console.WriteLine("Error connecting to the server.");
+            return false;
+        }
+    }
+    catch (HttpRequestException)
+    {
+        Console.WriteLine("Error: Server is not reachable.");
+        return false;
+    }
+}
+
+async Task<bool> Login()         // returns true if success / false if login failed
 {
     Console.Write("Enter username: ");
     var username = Console.ReadLine() ?? "UNKNOWN";
@@ -70,10 +128,12 @@ async Task Login()
     {
         var responseBodyStr = await response.Content.ReadAsStringAsync();
         Console.WriteLine($"Login successful: {responseBodyStr}");
+        return true;
     }
     else
     {
         Console.WriteLine($"Login failed. Status: {response.StatusCode}");
+        return false;
     }
 }
 
@@ -98,8 +158,6 @@ async Task ShowYourCart()
 
     if (response.IsSuccessStatusCode)
     {
-        // CART ADD HERE
-
         var responseBodyStr = await response.Content.ReadAsStringAsync();
         Console.WriteLine($"Your Cart: {responseBodyStr}");
     }
@@ -111,13 +169,10 @@ async Task ShowYourCart()
 
 async Task ShowYourCards()
 {
-    HttpResponseMessage response = await httpClient.GetAsync("http://localhost:7373/cards");
+    var response = await httpClient.GetAsync("http://localhost:7373/cards");
 
     if (response.IsSuccessStatusCode)
     {
-
-        // CARDS ADD HERE
-
         var responseBodyStr = await response.Content.ReadAsStringAsync();
         Console.WriteLine($"Your Cards: {responseBodyStr}");
     }
@@ -127,23 +182,34 @@ async Task ShowYourCards()
     }
 }
 
-async Task BuyItem()
+async Task AddToCart()
 {
-    Console.Write("Enter item ID to buy: ");
+    Console.Write("Enter item ID to add to cart: ");
     var itemId = Console.ReadLine();
 
-    var response = await httpClient.PostAsJsonAsync($"http://localhost:7373/buy/{itemId}", new { });
+    var response = await httpClient.PostAsJsonAsync($"http://localhost:7373/cart/add/{itemId}", new { });
 
     if (response.IsSuccessStatusCode)
     {
-        // BUY ADD HERE
-
         var responseBodyStr = await response.Content.ReadAsStringAsync();
-        Console.WriteLine($"Item purchased: {responseBodyStr}");
+        Console.WriteLine($"Item added to cart: {responseBodyStr}");
     }
     else
     {
-        Console.WriteLine($"Error purchasing item. Status: {response.StatusCode}");
+        Console.WriteLine($"Error adding to cart. Status: {response.StatusCode}");
+    }
+}
+async Task Purchase()
+{
+    var response = await httpClient.PostAsync($"http://localhost:7373/cart/purchase", null);
+    if (response.IsSuccessStatusCode)
+    {
+        var responseBodyStr = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"Purchased all: {responseBodyStr}");
+    }
+    else
+    {
+        Console.WriteLine($"Error purchasing items. Status: {response.StatusCode}");
     }
 }
 
@@ -153,8 +219,6 @@ async Task ShowYourCheckHistory()
 
     if (response.IsSuccessStatusCode)
     {
-        // CHECK HISTORY ADD HERE
-
         var responseBodyStr = await response.Content.ReadAsStringAsync();
         Console.WriteLine($"Your Check History: {responseBodyStr}");
     }
