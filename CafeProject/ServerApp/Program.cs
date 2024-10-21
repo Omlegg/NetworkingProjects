@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using Azure.Core;
 using ServerApp.Context;
 using ServerApp.Repositories;
 using SharedLib.Models.Entities;
@@ -18,8 +17,7 @@ var dbContext = new CafeDbContext();
 dbContext.Database.EnsureCreated();
 
 while(true)
-{   
-    User? currentUser = new User();
+{
     var context = await httpListener.GetContextAsync();
 
     var writer = new StreamWriter(context.Response.OutputStream);
@@ -33,27 +31,99 @@ while(true)
     var normalizedRawUrl = context.Request.RawUrl?.Trim().ToLower() ?? "/";
     var rawUrlItems = normalizedRawUrl.Split("/", StringSplitOptions.RemoveEmptyEntries);
 
-    if(rawUrlItems.Length == 0 || (rawUrlItems.Length == 1 && rawUrlItems[0] == "index"))
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.OK;
+    if (rawUrlItems.Length == 1 || (rawUrlItems.Length == 0 || (rawUrlItems.Length == 1 && rawUrlItems[0] == "index"))){
+        if(rawUrlItems[0] == "menu")
+        {
+            await Task.Run( async () => {
+            if(context.Request.HttpMethod == "GET")
+            {
+                var items = await repository.GetItems();
+                await writer.WriteAsync(JsonSerializer.Serialize(items));
+                await writer.FlushAsync();
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+            }
+            });
+        }
     }
-    else if (rawUrlItems.Length == 2)
-    {
-        if(rawUrlItems[0] == "account"){
+    else if (rawUrlItems.Length == 2){
+        if(rawUrlItems[0] == "cards"){
+            if(context.Request.HttpMethod == "GET"){
+                await Task.Run( async () => {
+                if(int.TryParse(rawUrlItems[1], out int userId)){
+                    var cards = await repository.GetCards(userId);
+                    await writer.WriteAsync(JsonSerializer.Serialize(cards));
+                    await writer.FlushAsync();
+                }
+                else{
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
+                });
+            }else{
+                context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+            }
+        }
+        else if(rawUrlItems[0] == "cart"){
+            if(context.Request.HttpMethod == "GET"){
+                if(int.TryParse(rawUrlItems[1], out int userId)){
+                    await Task.Run( async () => {
+                        var cart = await repository.GetCart(userId);
+                        if(cart != null){
+                            var cartItemGroups = await repository.GetCartItemGroup(cart);
+                            IQueryable<Item?> items = null;
+                            foreach(var cartItemGroup in cartItemGroups){
+                                items = items.Append(await repository.GetItem(cartItemGroup.ItemId));
+                            }
+                        }
+                        else{
+                            context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+                        }
+                    });
+                }else{
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
+            }
+        }
+        else if(rawUrlItems[0] == "buy"){
+            if(context.Request.HttpMethod == "DELETE"){
+                if(int.TryParse(rawUrlItems[1], out int userId)){
+                    await Task.Run(async () => {
+                        var cart  = await repository.GetCart(userId);
+                        if(cart != null){
+                            var cartItemGroups = await repository.GetCartItemGroup(cart);
+                            decimal total_price = 0;
+                            foreach(var cartItemGroup in cartItemGroups){
+                                total_price += cartItemGroup.Item.Price;
+                                await repository.RemoveCartItem(cartItemGroup);
+                                await repository.AddCheck(new Check{ Price = total_price, User = new User {Id = userId}});
+                            }
+                        }
+                        else{
+                            context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+                        }
+                    });
+                }else{
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
+            }
+        }
+        else if(rawUrlItems[0] == "account"){
             if(rawUrlItems[1] == "login"){
                 if(context.Request.HttpMethod == "POST")
                 {
-                    var user = JsonSerializer.Deserialize<User>(requestBodyStr);
-                    var foundUser = await repository.GetUser(user.UserName,user.Password);
-                    if(foundUser != null)
-                    {
-                        currentUser = foundUser;
-                    }
-                    else{
-                        await repository.AddUser(user);
-                        currentUser = user;
-                    }
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
+                    await Task.Run(async () => {
+                        var user = JsonSerializer.Deserialize<User>(requestBodyStr);
+                        var foundUser = await repository.GetUser(user.UserName,user.Password);
+                        if(foundUser  == null){
+                            await repository.AddUser(user);
+                            context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else{
+                            context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+                        }
+                    });
                 }
                 else{
                     context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
@@ -66,42 +136,31 @@ while(true)
         else{
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
-        
     }
-    else if (rawUrlItems.Length == 1){
-        if(rawUrlItems[0] == "menu")
-        {
-            if(context.Request.HttpMethod == "GET")
-            {
-                var items = await repository.GetItems();
-                await writer.WriteAsync(JsonSerializer.Serialize(items));
-                await writer.FlushAsync();
+    else if (rawUrlItems.Length == 3){
+        if(rawUrlItems[0] == "buy"){
+            if(context.Request.HttpMethod == "PUT"){
+                if(int.TryParse(rawUrlItems[2], out int itemId) && int.TryParse(rawUrlItems[1], out int userId)){
+                    await Task.Run( async () => {
+                        var item  = await repository.GetItem(itemId);
+                        var cart  = await repository.GetCart(userId);
+                        if(item != null && cart != null){
+                            await repository.AddCartItem(cart,item);
+                        }
+                        else{
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        }
+                    });
+                }else{
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                }
             }
-            else
-            {
+            else{
                 context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
             }
         }
-        else if(rawUrlItems[0] == "cart"){
-            if(context.Request.HttpMethod == "GET"){
-                if(currentUser != null){
-                var cart = await repository.GetCart(currentUser);
-                    if(cart != null){
-                        var cartItemGroups = await repository.GetCartItemGroup(cart);
-                        IQueryable<Item?> items = null;
-                        foreach(var cartItemGroup in cartItemGroups){
-                            items = items.Append(await repository.GetItem(cartItemGroup.ItemId));
-                        }
-                    }
-                    else{
-                        context.Response.StatusCode = (int)HttpStatusCode.NotModified;
-                    }
-                }else{
-                    context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-                }
-            }
-        }else{
-        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+        else{
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
     }
     else{

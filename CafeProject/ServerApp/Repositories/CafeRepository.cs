@@ -31,11 +31,22 @@ namespace ServerApp.Repositories
             );
         }
 
-        public Task AddCheck(Card card)
+        public Task AddCard(Card card)
         {
             return Task.Run( () =>{
                 dbContext.Cards.Add(card);
                 dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Items {card.Id} : {card.User.Id} user's {card.AmountOfCoffee}"});
+                dbContext.SaveChanges();
+            }
+            );
+        }
+
+        
+        public Task AddCheck(Check check)
+        {
+            return Task.Run( () =>{
+                dbContext.Checks.Add(check);
+                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Items {check.Id} : {check.User.Id} user's"});
                 dbContext.SaveChanges();
             }
             );
@@ -61,6 +72,15 @@ namespace ServerApp.Repositories
                 dbContext.SaveChanges();
             });
         }
+        
+        public Task RemoveCartItem(CartItemGroup cartItemGroup){
+            return Task.Run( () =>{
+                dbContext.Remove(cartItemGroup);
+                dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Removed Cart Item Group {cartItemGroup.Id} : {cartItemGroup.Cart.User.Id} user's {cartItemGroup.Cart.Id} cart {cartItemGroup.Item.Id}"});
+                dbContext.SaveChanges();
+            });
+        }
+
 
         public Task<User?> GetUser(string username, string password)
         {
@@ -114,6 +134,30 @@ namespace ServerApp.Repositories
                     }
                     dbContext.SaveChanges();
                     return cart;
+                }
+            );
+        }
+
+        public Task<IQueryable<Card>> GetCards(User user)
+        {
+            return Task<IQueryable<Card>>.Run( async () =>
+                {
+                    var cards = dbContext.Cards.Where(x => x.User == user);
+                    await dbContext.Logs.AddAsync(new Log {dateTime = DateTime.Now,LogText = $"Selected {user.Id} user's cards "});
+                    dbContext.SaveChanges();
+                    return cards;
+                }
+            );
+        }
+
+        public Task<IQueryable<Card>> GetCards(int id)
+        {
+            return Task<IQueryable<Card>>.Run( async () =>
+                {
+                    var cards = dbContext.Cards.Where(x => x.User.Id == id);
+                    dbContext.Logs.AddAsync(new Log {dateTime = DateTime.Now,LogText = $"Selected {id} user's cards "});
+                    dbContext.SaveChanges();
+                    return cards;
                 }
             );
         }
