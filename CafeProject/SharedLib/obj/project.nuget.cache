@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "BSevxrdnqoEVkJSkrzyiXqspE0l4rZe9lRCstOdfiucsOx5y/SvDkkcRcdVCS5Y+SmZIYL4gZp1ykO4hF56aFQ==",
+  "dgSpecHash": "wLrNUPGmDjE=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Balye_st12\\Desktop\\GitHub\\NetworkingProjects\\CafeProject\\SharedLib\\SharedLib.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "D:\\ITStepHw\\NetworkP\\CafeProject\\SharedLib\\SharedLib.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.35\\microsoft.netcore.app.ref.6.0.35.nupkg.sha512",
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.35\\microsoft.windowsdesktop.app.ref.6.0.35.nupkg.sha512",
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.35\\microsoft.aspnetcore.app.ref.6.0.35.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -34,7 +34,7 @@ namespace ServerApp.Context
         {
             modelBuilder
                 .Entity<User>()
-                .HasKey(user => user.Id);
+                .HasKey(user => user.id);
 
             modelBuilder
                 .Entity<Cart>()
@@ -58,11 +58,11 @@ namespace ServerApp.Context
 
             modelBuilder
                 .Entity<User>()
-                .Property(user => user.UserName).IsRequired(true);
+                .Property(user => user.userName).IsRequired(true);
 
             modelBuilder
                 .Entity<User>()
-                .Property(user => user.Password).IsRequired(true);
+                .Property(user => user.password).IsRequired(true);
 
             modelBuilder
                 .Entity<Check>()

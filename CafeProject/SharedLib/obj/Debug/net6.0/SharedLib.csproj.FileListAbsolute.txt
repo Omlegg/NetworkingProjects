@@ -10,3 +10,15 @@ C:\Users\Balye_st12\Desktop\GitHub\NetworkingProjects\CafeProject\SharedLib\obj\
 C:\Users\Balye_st12\Desktop\GitHub\NetworkingProjects\CafeProject\SharedLib\obj\Debug\net6.0\refint\SharedLib.dll
 C:\Users\Balye_st12\Desktop\GitHub\NetworkingProjects\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.pdb
 C:\Users\Balye_st12\Desktop\GitHub\NetworkingProjects\CafeProject\SharedLib\obj\Debug\net6.0\ref\SharedLib.dll
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\bin\Debug\net6.0\SharedLib.deps.json
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\bin\Debug\net6.0\SharedLib.dll
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\bin\Debug\net6.0\SharedLib.pdb
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.GeneratedMSBuildEditorConfig.editorconfig
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.AssemblyInfoInputs.cache
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.AssemblyInfo.cs
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.csproj.CoreCompileInputs.cache
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.sourcelink.json
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.dll
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\refint\SharedLib.dll
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\SharedLib.pdb
+D:\ITStepHw\NetworkP\CafeProject\SharedLib\obj\Debug\net6.0\ref\SharedLib.dll

@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 HttpClient httpClient = new HttpClient();
 bool exit = false;
 bool isLoggedIn = false;
-
-if (!await CheckServerConnection())
-{
-    Console.WriteLine("Unable to connect to the server. Program will now exit.");
-    return;
-}
+User? loginData = null;
 
 while (!exit)
 {
@@ -109,7 +104,7 @@ async Task<bool> CheckServerConnection()
     }
 }
 
-async Task<bool> Login()         // returns true if success / false if login failed
+async Task<bool> Login()
 {
     Console.Write("Enter username: ");
     var username = Console.ReadLine() ?? "UNKNOWN";
@@ -117,10 +112,10 @@ async Task<bool> Login()         // returns true if success / false if login fai
     Console.Write("Enter password: ");
     var password = Console.ReadLine() ?? "_";
 
-    var loginData = new User
+    loginData = new User
     {
-        UserName = username,
-        Password = password
+        userName = username,
+        password = password
     };
     var response = await httpClient.PostAsJsonAsync("http://localhost:7373/account/login", loginData);
 
@@ -187,7 +182,7 @@ async Task AddToCart()
     Console.Write("Enter item ID to add to cart: ");
     var itemId = Console.ReadLine();
 
-    var response = await httpClient.PostAsJsonAsync($"http://localhost:7373/cart/add/{itemId}", new { });
+    var response = await httpClient.PostAsJsonAsync($"http://localhost:7373/cart/add/{itemId}/{loginData.userName}/{loginData.password}", new { });
 
     if (response.IsSuccessStatusCode)
     {
@@ -199,9 +194,10 @@ async Task AddToCart()
         Console.WriteLine($"Error adding to cart. Status: {response.StatusCode}");
     }
 }
+
 async Task Purchase()
 {
-    var response = await httpClient.PostAsync($"http://localhost:7373/cart/purchase", null);
+    var response = await httpClient.PostAsync($"http://localhost:7373/buy/{loginData.userName}/{loginData.password}", null);
     if (response.IsSuccessStatusCode)
     {
         var responseBodyStr = await response.Content.ReadAsStringAsync();

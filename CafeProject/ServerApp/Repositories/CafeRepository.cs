@@ -15,7 +15,7 @@ namespace ServerApp.Repositories
             return Task.Run( () =>{
                 dbContext.Users.Add(user);
                 dbContext.Carts.Add(new Cart{User = user});
-                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new User {user.Id} : {user.UserName}"});
+                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new User {user.id} : {user.userName}"});
                 dbContext.SaveChanges();
             }
             );
@@ -35,7 +35,7 @@ namespace ServerApp.Repositories
         {
             return Task.Run( () =>{
                 dbContext.Cards.Add(card);
-                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Items {card.Id} : {card.User.Id} user's {card.AmountOfCoffee}"});
+                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Items {card.Id} : {card.User.id} user's {card.AmountOfCoffee}"});
                 dbContext.SaveChanges();
             }
             );
@@ -46,7 +46,7 @@ namespace ServerApp.Repositories
         {
             return Task.Run( () =>{
                 dbContext.Checks.Add(check);
-                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Items {check.Id} : {check.User.Id} user's"});
+                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Items {check.Id} : {check.User.id} user's"});
                 dbContext.SaveChanges();
             }
             );
@@ -57,7 +57,7 @@ namespace ServerApp.Repositories
             return Task.Run( () =>{
                 var cartItemGroup = new CartItemGroup{Item = item, Cart = cart};
                 dbContext.CartItemGroup.Add(cartItemGroup);
-                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Cart Item Group {cartItemGroup.Id} : {cart.User.Id} user's {cart.Id} cart {item.Id}"});
+                dbContext.Logs.Add(new Log{dateTime = DateTime.Now,LogText = $"Added new Cart Item Group {cartItemGroup.Id} : {cart.User.id} user's {cart.Id} cart {item.Id}"});
                 dbContext.SaveChanges();
             }
             );
@@ -68,7 +68,7 @@ namespace ServerApp.Repositories
                 var cartItemGroup = dbContext.CartItemGroup.First(row => row.CartId == cart.Id && row.ItemId == item.Id);
 
                 dbContext.Remove(cartItemGroup);
-                dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Removed Cart Item Group {cartItemGroup.Id} : {cart.User.Id} user's {cart.Id} cart {item.Id}"});
+                dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Removed Cart Item Group {cartItemGroup.Id} : {cart.User.id} user's {cart.Id} cart {item.Id}"});
                 dbContext.SaveChanges();
             });
         }
@@ -76,7 +76,7 @@ namespace ServerApp.Repositories
         public Task RemoveCartItem(CartItemGroup cartItemGroup){
             return Task.Run( () =>{
                 dbContext.Remove(cartItemGroup);
-                dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Removed Cart Item Group {cartItemGroup.Id} : {cartItemGroup.Cart.User.Id} user's {cartItemGroup.Cart.Id} cart {cartItemGroup.Item.Id}"});
+                dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Removed Cart Item Group {cartItemGroup.Id} : {cartItemGroup.Cart.User.id} user's {cartItemGroup.Cart.Id} cart {cartItemGroup.Item.Id}"});
                 dbContext.SaveChanges();
             });
         }
@@ -86,9 +86,9 @@ namespace ServerApp.Repositories
         {
             return Task<User?>.Run( () =>
                 {
-                    var user = dbContext.Users.FirstOrDefault(x => x.UserName == username && x.Password == password);
+                    var user = dbContext.Users.FirstOrDefault(x => x.userName == username && x.password == password);
                     if(user != null){
-                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected user {user.Id} : {username} "});
+                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected user {user.id} : {username} "});
                     }
                     dbContext.SaveChanges();
                     return user;
@@ -100,9 +100,9 @@ namespace ServerApp.Repositories
         {
             return Task<User?>.Run( () =>
                 {
-                    var user = dbContext.Users.FirstOrDefault(x => x.Id == id);
+                    var user = dbContext.Users.FirstOrDefault(x => x.id == id);
                     if(user != null){
-                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected user {user.Id} : {user.UserName} "});
+                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected user {user.id} : {user.userName} "});
                     }
                     dbContext.SaveChanges();
                     return user;
@@ -116,7 +116,7 @@ namespace ServerApp.Repositories
                 {
                     var cart = dbContext.Carts.FirstOrDefault(x => x.Id == id);
                     if(cart != null){
-                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected user {cart.Id} : {cart.User.Id} user's cart "});
+                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected user {cart.Id} : {cart.User.id} user's cart "});
                     }
                     dbContext.SaveChanges();
                     return cart;
@@ -130,7 +130,25 @@ namespace ServerApp.Repositories
                 {
                     var cart = dbContext.Carts.FirstOrDefault(x => x.User == user);
                     if(cart != null){
-                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected cart {cart.Id} : {cart.User.Id} user's cart "});
+                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected cart {cart.Id} : {cart.User.id} user's cart "});
+                    }
+                    dbContext.SaveChanges();
+                    return cart;
+                }
+            );
+        }
+
+        public Task<Cart?> GetCart(string username, string password)
+        {
+            return Task<Cart?>.Run( () =>
+                {
+                    var foundUser = dbContext.Users.FirstOrDefault(x => x.userName == username && x.password == password);
+                    if(foundUser == null){
+                        return null;
+                    }
+                    var cart = dbContext.Carts.FirstOrDefault(x => x.User == foundUser);
+                    if(cart != null){
+                        dbContext.Logs.Add(new Log {dateTime = DateTime.Now,LogText = $"Selected cart {cart.Id} : {cart.User.id} user's cart "});
                     }
                     dbContext.SaveChanges();
                     return cart;
@@ -143,7 +161,7 @@ namespace ServerApp.Repositories
             return Task<IQueryable<Card>>.Run( async () =>
                 {
                     var cards = dbContext.Cards.Where(x => x.User == user);
-                    await dbContext.Logs.AddAsync(new Log {dateTime = DateTime.Now,LogText = $"Selected {user.Id} user's cards "});
+                    await dbContext.Logs.AddAsync(new Log {dateTime = DateTime.Now,LogText = $"Selected {user.id} user's cards "});
                     dbContext.SaveChanges();
                     return cards;
                 }
@@ -154,7 +172,7 @@ namespace ServerApp.Repositories
         {
             return Task<IQueryable<Card>>.Run( async () =>
                 {
-                    var cards = dbContext.Cards.Where(x => x.User.Id == id);
+                    var cards = dbContext.Cards.Where(x => x.User.id == id);
                     dbContext.Logs.AddAsync(new Log {dateTime = DateTime.Now,LogText = $"Selected {id} user's cards "});
                     dbContext.SaveChanges();
                     return cards;
